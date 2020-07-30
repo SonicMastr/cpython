@@ -113,6 +113,20 @@ elif 'riscos' in _names:
     __all__.extend(_get_exports_list(riscos))
     del riscos
 
+elif 'vita' in _names:
+    name = 'vita'
+    linesep = '\r\n'
+    from vita import *
+    try:
+        from vita import _exit
+    except ImportError:
+        pass
+    import vitapath as path
+
+    import vita
+    __all__.extend(_get_exports_list(vita))
+    del vita
+
 else:
     raise ImportError, 'no os specific module found'
 

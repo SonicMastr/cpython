@@ -48,6 +48,31 @@ getcwd(char *buf, int size)
 
 #else /* !HAVE_GETWD */
 
+#ifdef __VITA__
+
+#include <string.h>
+
+#ifndef PWD_PATH
+#define PWD_PATH "app0:"
+#endif
+
+char *
+getcwd(char *buf, int size)
+{
+    if (size <= 0) {
+        errno = EINVAL;
+        return NULL;
+    }
+    if (size < sizeof(PWD_PATH)) {
+        errno = ERANGE;
+        return NULL;
+    }
+    strncpy(buf, PWD_PATH, size);
+    return buf;
+}
+
+#else /* __VITA__ */
+
 /* Version for really old UNIX systems -- use pipe from pwd */
 
 #ifndef PWD_CMD
@@ -79,4 +104,5 @@ getcwd(char *buf, int size)
     return buf;
 }
 
+#endif /* __VITA__ */
 #endif /* !HAVE_GETWD */

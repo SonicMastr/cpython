@@ -340,6 +340,9 @@ then
 	*-*-cygwin*)
 		ac_sys_system=Cygwin
 		;;
+	arm-dolce-eabi)
+		ac_sys_system=Vita
+		;;
 	*)
 		# for now, limit cross builds to known configurations
 		MACHDEP="unknown"
@@ -385,6 +388,9 @@ if test "$cross_compiling" = yes; then
 		;;
 	*-*-cygwin*)
 		_host_cpu=
+		;;
+	arm-dolce-eabi)
+		_host_cpu=arm
 		;;
 	*)
 		# for now, limit cross builds to known configurations

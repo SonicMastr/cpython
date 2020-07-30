@@ -686,6 +686,18 @@ Windows: When executing Python scripts on the command line using file type
         redirects may not work unless you set a specific registry key.  See
         the Knowledge Base article <http://support.microsoft.com/kb/321788>.
 
+Vita: Configure with
+
+    "$CPYTHON_SRC_DIR/configure"                                                    \
+        --build="$BUILD" --host=arm-dolce-eabi --prefix="$DOLCESDK/arm-dolce-eabi"  \
+        --disable-shared --without-threads --disable-ipv6 --without-signal-module   \
+        CONFIG_SITE="$CPYTHON_SRC_DIR/config.site"                                  \
+        CFLAGS="-Wl,-q,-z,nocopyreloc"                                              \
+        CPPFLAGS="-Wl,-q,-z,nocopyreloc"
+
+    The environmental variables HOME and PYTHONHOME must be set with setenv before
+    calling Py_Initialize. Usually set to "app0:".
+
 
 Configuring the bsddb and dbm modules
 -------------------------------------

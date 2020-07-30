@@ -139,6 +139,14 @@ corresponding Unix manual entries for more information on calls.");
 #else
 #if defined(PYOS_OS2) && defined(PYCC_GCC) || defined(__VMS)
 /* Everything needed is defined in PC/os2emx/pyconfig.h or vms/pyconfig.h */
+#else
+#if defined(__VITA__)
+#define HAVE_GETCWD     1
+#define HAVE_OPENDIR    1
+#undef HAVE_FSYNC
+#undef HAVE_FDATASYNC
+#undef HAVE_FCHDIR
+#undef HAVE_SYMLINK
 #else                   /* all other compilers */
 /* Unix functions that the configure script doesn't check for */
 #define HAVE_EXECV      1
@@ -161,6 +169,7 @@ corresponding Unix manual entries for more information on calls.");
 #define HAVE_SYSTEM     1
 #define HAVE_WAIT       1
 #define HAVE_TTYNAME    1
+#endif /* __VITA__ */
 #endif  /* PYOS_OS2 && PYCC_GCC && __VMS */
 #endif  /* _MSC_VER */
 #endif  /* __BORLANDC__ */
@@ -1814,6 +1823,7 @@ posix_ctermid(PyObject *self, PyObject *noargs)
 }
 #endif
 
+#ifdef HAVE_CHDIR
 PyDoc_STRVAR(posix_chdir__doc__,
 "chdir(path)\n\n\
 Change the current working directory to the specified path.");
@@ -1831,6 +1841,7 @@ posix_chdir(PyObject *self, PyObject *args)
     return posix_1str(args, "et:chdir", chdir);
 #endif
 }
+#endif
 
 #ifdef HAVE_FCHDIR
 PyDoc_STRVAR(posix_fchdir__doc__,
@@ -1846,6 +1857,7 @@ posix_fchdir(PyObject *self, PyObject *fdobj)
 #endif /* HAVE_FCHDIR */
 
 
+#ifdef HAVE_CHMOD
 PyDoc_STRVAR(posix_chmod__doc__,
 "chmod(path, mode)\n\n\
 Change the access permissions of a file.");
@@ -1918,6 +1930,7 @@ posix_chmod(PyObject *self, PyObject *args)
     return Py_None;
 #endif
 }
+#endif
 
 #ifdef HAVE_FCHMOD
 PyDoc_STRVAR(posix_fchmod__doc__,
@@ -2656,6 +2669,7 @@ posix__getfullpathname(PyObject *self, PyObject *args)
 } /* end of posix__getfullpathname */
 #endif /* MS_WINDOWS */
 
+#ifdef HAVE_MKDIR
 PyDoc_STRVAR(posix_mkdir__doc__,
 "mkdir(path [, mode=0777])\n\n\
 Create a directory.");
@@ -2714,6 +2728,7 @@ posix_mkdir(PyObject *self, PyObject *args)
     return Py_None;
 #endif /* MS_WINDOWS */
 }
+#endif
 
 
 /* sys/resource.h is needed for at least: wait3(), wait4(), broken nice. */
@@ -2804,6 +2819,7 @@ error:
 }
 
 
+#ifdef HAVE_RMDIR
 PyDoc_STRVAR(posix_rmdir__doc__,
 "rmdir(path)\n\n\
 Remove a directory.");
@@ -2817,6 +2833,7 @@ posix_rmdir(PyObject *self, PyObject *args)
     return posix_1str(args, "et:rmdir", rmdir);
 #endif
 }
+#endif
 
 
 PyDoc_STRVAR(posix_stat__doc__,
@@ -2854,6 +2871,7 @@ posix_system(PyObject *self, PyObject *args)
 #endif
 
 
+#ifdef HAVE_UMASK
 PyDoc_STRVAR(posix_umask__doc__,
 "umask(new_mask) -> old_mask\n\n\
 Set the current numeric umask and return the previous umask.");
@@ -2869,6 +2887,7 @@ posix_umask(PyObject *self, PyObject *args)
         return posix_error();
     return PyInt_FromLong((long)i);
 }
+#endif
 
 
 PyDoc_STRVAR(posix_unlink__doc__,
@@ -2952,6 +2971,7 @@ extract_time(PyObject *t, time_t* sec, long* usec)
     return 0;
 }
 
+#ifdef HAVE_UTIME
 PyDoc_STRVAR(posix_utime__doc__,
 "utime(path, (atime, mtime))\n\
 utime(path, None)\n\n\
@@ -3115,6 +3135,7 @@ done:
 #undef MTIME
 #endif /* MS_WINDOWS */
 }
+#endif
 
 
 /* Process operations */
@@ -8862,11 +8883,15 @@ static PyMethodDef posix_methods[] = {
 #ifdef HAVE_TTYNAME
     {"ttyname",         posix_ttyname, METH_VARARGS, posix_ttyname__doc__},
 #endif
+#ifdef HAVE_CHDIR
     {"chdir",           posix_chdir, METH_VARARGS, posix_chdir__doc__},
+#endif
 #ifdef HAVE_CHFLAGS
     {"chflags",         posix_chflags, METH_VARARGS, posix_chflags__doc__},
 #endif /* HAVE_CHFLAGS */
+#ifdef HAVE_CHMOD
     {"chmod",           posix_chmod, METH_VARARGS, posix_chmod__doc__},
+#endif
 #ifdef HAVE_FCHMOD
     {"fchmod",          posix_fchmod, METH_VARARGS, posix_fchmod__doc__},
 #endif /* HAVE_FCHMOD */
@@ -8902,7 +8927,9 @@ static PyMethodDef posix_methods[] = {
 #endif /* HAVE_LINK */
     {"listdir",         posix_listdir, METH_VARARGS, posix_listdir__doc__},
     {"lstat",           posix_lstat, METH_VARARGS, posix_lstat__doc__},
+#ifdef HAVE_MKDIR
     {"mkdir",           posix_mkdir, METH_VARARGS, posix_mkdir__doc__},
+#endif
 #ifdef HAVE_NICE
     {"nice",            posix_nice, METH_VARARGS, posix_nice__doc__},
 #endif /* HAVE_NICE */
@@ -8910,7 +8937,9 @@ static PyMethodDef posix_methods[] = {
     {"readlink",        posix_readlink, METH_VARARGS, posix_readlink__doc__},
 #endif /* HAVE_READLINK */
     {"rename",          posix_rename, METH_VARARGS, posix_rename__doc__},
+#ifdef HAVE_RMDIR
     {"rmdir",           posix_rmdir, METH_VARARGS, posix_rmdir__doc__},
+#endif
     {"stat",            posix_stat, METH_VARARGS, posix_stat__doc__},
     {"stat_float_times", stat_float_times, METH_VARARGS, stat_float_times__doc__},
 #ifdef HAVE_SYMLINK
@@ -8919,13 +8948,17 @@ static PyMethodDef posix_methods[] = {
 #ifdef HAVE_SYSTEM
     {"system",          posix_system, METH_VARARGS, posix_system__doc__},
 #endif
+#ifdef HAVE_UMASK
     {"umask",           posix_umask, METH_VARARGS, posix_umask__doc__},
+#endif
 #ifdef HAVE_UNAME
     {"uname",           posix_uname, METH_NOARGS, posix_uname__doc__},
 #endif /* HAVE_UNAME */
     {"unlink",          posix_unlink, METH_VARARGS, posix_unlink__doc__},
     {"remove",          posix_unlink, METH_VARARGS, posix_remove__doc__},
+#ifdef HAVE_UTIME
     {"utime",           posix_utime, METH_VARARGS, posix_utime__doc__},
+#endif
 #ifdef HAVE_TIMES
     {"times",           posix_times, METH_NOARGS, posix_times__doc__},
 #endif /* HAVE_TIMES */
@@ -9471,6 +9504,10 @@ all_ins(PyObject *d)
 #elif defined(PYOS_OS2)
 #define INITFUNC initos2
 #define MODNAME "os2"
+
+#elif defined(__VITA__)
+#define INITFUNC initvita
+#define MODNAME "vita"
 
 #else
 #define INITFUNC initposix

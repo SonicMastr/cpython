@@ -401,7 +401,7 @@ LIBRARY_OBJS=	\
 
 # Default target
 all:		@DEF_MAKE_ALL_RULE@
-build_all:	check-clean-src $(BUILDPYTHON) oldsharedmods sharedmods gdbhooks
+build_all:	check-clean-src $(BUILDPYTHON) gdbhooks
 
 # Check that the source is clean when building out of source.
 check-clean-src:
@@ -945,7 +945,7 @@ altinstall:	commoninstall
 
 commoninstall:	check-clean-src @FRAMEWORKALTINSTALLFIRST@ \
 		altbininstall libinstall inclinstall libainstall \
-		sharedinstall oldsharedinstall altmaninstall \
+		altmaninstall \
 		@FRAMEWORKALTINSTALLLAST@
 
 # Install shared libraries enabled by Setup
