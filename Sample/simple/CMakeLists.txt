@@ -7,7 +7,7 @@ include("${DOLCESDK_CMAKE_FILE}" REQUIRED)
 project(cpython-simple-example LANGUAGES C)
 
 add_compile_options(
-  -O3 -std=gnu11
+  -Ofast -std=gnu11
   -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
   -fsingle-precision-constant -fno-common
 )

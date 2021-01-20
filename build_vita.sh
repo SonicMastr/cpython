@@ -13,7 +13,7 @@ rm -rf test
 rm -rf lib2to3/tests
 find . -type l -not -name \*.py -delete
 find . -type d -empty -delete
-python -OO -m compileall .
+python2 -OO -m compileall .
 find . -type l -not -name \*.pyc -delete
 7z a -l ../python27.zip .
 cp ../python27.zip $DOLCESDK/arm-dolce-eabi/lib
