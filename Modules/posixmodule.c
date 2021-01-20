@@ -2669,7 +2669,6 @@ posix__getfullpathname(PyObject *self, PyObject *args)
 } /* end of posix__getfullpathname */
 #endif /* MS_WINDOWS */
 
-#ifdef HAVE_MKDIR
 PyDoc_STRVAR(posix_mkdir__doc__,
 "mkdir(path [, mode=0777])\n\n\
 Create a directory.");
@@ -2717,6 +2716,8 @@ posix_mkdir(PyObject *self, PyObject *args)
     Py_BEGIN_ALLOW_THREADS
 #if ( defined(__WATCOMC__) || defined(PYCC_VACPP) ) && !defined(__QNX__)
     res = mkdir(path);
+#elif defined(__VITA__)
+    res = sceIoMkdir(path, mode);
 #else
     res = mkdir(path, mode);
 #endif
@@ -2728,7 +2729,6 @@ posix_mkdir(PyObject *self, PyObject *args)
     return Py_None;
 #endif /* MS_WINDOWS */
 }
-#endif
 
 
 /* sys/resource.h is needed for at least: wait3(), wait4(), broken nice. */
@@ -2818,8 +2818,6 @@ error:
 #endif
 }
 
-
-#ifdef HAVE_RMDIR
 PyDoc_STRVAR(posix_rmdir__doc__,
 "rmdir(path)\n\n\
 Remove a directory.");
@@ -2829,11 +2827,24 @@ posix_rmdir(PyObject *self, PyObject *args)
 {
 #ifdef MS_WINDOWS
     return win32_1str(args, "rmdir", "s:rmdir", RemoveDirectoryA, "U:rmdir", RemoveDirectoryW);
+#elif defined (__VITA__)
+    char *path1 = NULL;
+    int res;
+    if (!PyArg_ParseTuple(args, "et:rmdir",
+                          Py_FileSystemDefaultEncoding, &path1))
+        return NULL;
+    Py_BEGIN_ALLOW_THREADS
+    res = sceIoRmdir(path1);
+    Py_END_ALLOW_THREADS
+    if (res < 0)
+        return posix_error_with_allocated_filename(path1);
+    PyMem_Free(path1);
+    Py_INCREF(Py_None);
+    return Py_None;
 #else
     return posix_1str(args, "et:rmdir", rmdir);
 #endif
 }
-#endif
 
 
 PyDoc_STRVAR(posix_stat__doc__,
@@ -8927,9 +8938,7 @@ static PyMethodDef posix_methods[] = {
 #endif /* HAVE_LINK */
     {"listdir",         posix_listdir, METH_VARARGS, posix_listdir__doc__},
     {"lstat",           posix_lstat, METH_VARARGS, posix_lstat__doc__},
-#ifdef HAVE_MKDIR
     {"mkdir",           posix_mkdir, METH_VARARGS, posix_mkdir__doc__},
-#endif
 #ifdef HAVE_NICE
     {"nice",            posix_nice, METH_VARARGS, posix_nice__doc__},
 #endif /* HAVE_NICE */
@@ -8937,9 +8946,7 @@ static PyMethodDef posix_methods[] = {
     {"readlink",        posix_readlink, METH_VARARGS, posix_readlink__doc__},
 #endif /* HAVE_READLINK */
     {"rename",          posix_rename, METH_VARARGS, posix_rename__doc__},
-#ifdef HAVE_RMDIR
     {"rmdir",           posix_rmdir, METH_VARARGS, posix_rmdir__doc__},
-#endif
     {"stat",            posix_stat, METH_VARARGS, posix_stat__doc__},
     {"stat_float_times", stat_float_times, METH_VARARGS, stat_float_times__doc__},
 #ifdef HAVE_SYMLINK

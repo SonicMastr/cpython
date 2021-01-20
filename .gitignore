@@ -24,6 +24,7 @@ Lib/lib2to3/*.pickle
 Lib/test/data/*
 Makefile
 Makefile.pre
+Makefile.pre.in
 Misc/python.pc
 Modules/Setup
 Modules/Setup.config
@@ -87,3 +88,7 @@ coverage/
 externals/
 htmlcov/
 gmon.out
+
+.vscode
+python27-vita-build
+python27.zip

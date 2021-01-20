@@ -9,7 +9,9 @@
 #include <sys/file.h>
 #endif
 
+#ifdef HAVE_IOCTL
 #include <sys/ioctl.h>
+#endif
 #include <fcntl.h>
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>
@@ -92,7 +94,7 @@ corresponding to the return value of the fcntl call in the C code.");
 
 
 /* ioctl(fd, op, [arg]) */
-
+#ifdef HAVE_IOCTL
 static PyObject *
 fcntl_ioctl(PyObject *self, PyObject *args)
 {
@@ -243,7 +245,7 @@ exceed 1024 bytes.\n\
 If the arg given is an integer or if none is specified, the result value is\n\
 an integer corresponding to the return value of the ioctl call in the C\n\
 code.");
-
+#endif
 
 /* flock(fd, operation) */
 
@@ -407,7 +409,9 @@ starts.  whence is as with fileobj.seek(), specifically:\n\
 
 static PyMethodDef fcntl_methods[] = {
     {"fcntl",           fcntl_fcntl, METH_VARARGS, fcntl_doc},
+#ifdef HAVE_IOCTL
     {"ioctl",           fcntl_ioctl, METH_VARARGS, ioctl_doc},
+#endif
     {"flock",           fcntl_flock, METH_VARARGS, flock_doc},
     {"lockf",       fcntl_lockf, METH_VARARGS, lockf_doc},
     {NULL,              NULL}           /* sentinel */

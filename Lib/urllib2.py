@@ -930,7 +930,7 @@ def randombytes(n):
     # Use /dev/urandom if it is available.  Fall back to random module
     # if not.  It might be worthwhile to extend this function to use
     # other platform-specific mechanisms for getting random bytes.
-    if os.path.exists("/dev/urandom"):
+    if os.name != "vita" and os.path.exists("/dev/urandom"):
         f = open("/dev/urandom")
         s = f.read(n)
         f.close()

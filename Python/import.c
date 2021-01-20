@@ -1402,6 +1402,12 @@ find_module(char *fullname, char *subname, PyObject *path, char *buf,
         Py_DECREF(meta_path);
     }
 
+    if (fullname != NULL && is_builtin(fullname)) {
+		strcpy(buf, fullname);
+        PyMem_FREE(name);
+		return &fd_builtin;
+	}
+
     if (path != NULL && PyString_Check(path)) {
         /* The only type of submodule allowed inside a "frozen"
            package are other frozen modules or packages. */

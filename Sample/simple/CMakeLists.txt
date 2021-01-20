@@ -21,12 +21,22 @@ include_directories(
 set(ELF "simple.elf")
 set(SELF "simple.self")
 
+find_package(OpenSSL REQUIRED)
+
 add_executable("${ELF}"
   main.c
 )
 
 target_link_libraries("${ELF}"
   python2.7
+  pthread
+  SceIofilemgr_stub
+  SceNet_stub
+  SceNetCtl_stub
+  SceSsl_stub
+  SceSysmodule_stub
+  SceLibRng_stub
+  ${OPENSSL_LIBRARIES}
   z
   m
 )
@@ -46,4 +56,5 @@ dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
   VERSION "${TITLE_VER}"
   FILE "$ENV{DOLCESDK}/arm-dolce-eabi/lib/python27.zip" lib/python27.zip
+  FILE ytdl.py ytdl.py
 )

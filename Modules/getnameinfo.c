@@ -81,6 +81,50 @@ struct gni_sockinet {
 #define ENI_FAMILY      5
 #define ENI_SALEN       6
 
+#ifdef __VITA__
+#include <sys/socket.h>
+#include <netdb.h>
+#include <psp2/net.h>
+#define SCE_ERRNO_MASK 0xFF
+
+struct hostent *gethostbyaddr(const void *__addr, socklen_t __len, int __type) {
+	static struct hostent ent;
+    char name[NI_MAXHOST];
+	static char sname[NI_MAXHOST] = "";
+	static char *addrlist[2] = { NULL, NULL };
+
+    if (__type != AF_INET) {
+        errno = SCE_NET_ERROR_RESOLVER_ENOSUPPORT;
+		return NULL;
+    }
+
+	int rid = sceNetResolverCreate("resolver", NULL, 0);
+	if (rid < 0) {
+		errno = rid & SCE_ERRNO_MASK;
+		return NULL;
+	}
+
+	int err = sceNetResolverStartAton(rid, __addr, name, sizeof(name), 0, 0, 0);
+	sceNetResolverDestroy(rid);
+	if (err < 0) {
+		errno = err & SCE_ERRNO_MASK;
+		return NULL;
+	}
+
+	strncpy(sname, name, NI_MAXHOST - 1);
+    addrlist[0] = (char *) __addr;
+
+	ent.h_name = sname;
+	ent.h_aliases = 0;
+	ent.h_addrtype = __type;
+	ent.h_length = sizeof(struct SceNetInAddr);
+	ent.h_addr_list = addrlist;
+	ent.h_addr = addrlist[0];
+
+	return &ent;
+}
+#endif /* __VITA__ */
+
 /* forward declaration to make gcc happy */
 int getnameinfo Py_PROTO((const struct sockaddr *, size_t, char *, size_t,
                           char *, size_t, int));
@@ -141,12 +185,14 @@ getnameinfo(sa, salen, host, hostlen, serv, servlen, flags)
             return ENI_MEMORY;
         strcpy(serv, numserv);
     } else {
+#ifndef __VITA__
         sp = getservbyport(port, (flags & NI_DGRAM) ? "udp" : "tcp");
         if (sp) {
             if (strlen(sp->s_name) > servlen)
                 return ENI_MEMORY;
             strcpy(serv, sp->s_name);
         } else
+#endif /* __VITA__ */
             return ENI_NOSERVNAME;
     }
 
@@ -181,7 +227,7 @@ getnameinfo(sa, salen, host, hostlen, serv, servlen, flags)
         hp = getipnodebyaddr(addr, gni_afd->a_addrlen, gni_afd->a_af, &h_error);
 #else
         hp = gethostbyaddr(addr, gni_afd->a_addrlen, gni_afd->a_af);
-        h_error = h_errno;
+        //h_error = h_errno;
 #endif
 
         if (hp) {
