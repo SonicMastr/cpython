@@ -86,7 +86,8 @@ PyThread_start_new_thread(void (*func)(void *), void *arg)
   long
 PyThread_get_thread_ident(void)
 {
-  return sceKernelGetThreadId();
+  int id = sceKernelGetThreadId();
+  return (id < 0) ? -1 : (long) id;
 }
 
   void
@@ -136,17 +137,18 @@ PyThread_free_lock(PyThread_type_lock lock)
   int
 PyThread_acquire_lock(PyThread_type_lock lock, int waitflag)
 {
-  int success = 0;
+  int success, status = 0;
   int thelock = (int) lock;
 
   dprintf(("PyThread_acquire_lock(%p, %d) called\n", lock, waitflag));
   if (waitflag) {             /* blocking */
-    success = sceKernelLockMutex(thelock, 1, NULL);
+    status = sceKernelLockMutex(thelock, 1, NULL);
   } else {                    /* non blocking */
-    success = sceKernelTryLockMutex(thelock, 1);
+    status = sceKernelTryLockMutex(thelock, 1);
   }
+  success = (status >= 0) ? 1 : 0;
   dprintf(("PyThread_acquire_lock(%p, %d) -> %d\n", lock, waitflag, success));
-  return success = 0 ? 0 : 1;
+  return success;
 }
 
   void
