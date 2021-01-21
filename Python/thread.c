@@ -23,6 +23,12 @@
 
 #include <stdlib.h>
 
+#ifdef __VITA__
+#ifdef  HAVE_PTHREAD_H /* XXX Need to check in configure.ac */
+#undef _POSIX_THREADS
+#endif
+#endif
+
 #ifdef __sgi
 #ifndef HAVE_PTHREAD_H /* XXX Need to check in configure.ac */
 #undef _POSIX_THREADS
@@ -32,6 +38,10 @@
 #include "pythread.h"
 
 #ifndef _POSIX_THREADS
+
+#ifdef __VITA__
+#define VITA_THREADS
+#endif
 
 #ifdef __sgi
 #define SGI_THREADS
@@ -99,6 +109,10 @@ PyThread_init_thread(void)
    A value of 0 means using the platform's default stack size
    or the size specified by the THREAD_STACK_SIZE macro. */
 static size_t _pythread_stacksize = 0;
+
+#ifdef VITA_THREADS
+#include "thread_vita.h"
+#endif
 
 #ifdef SGI_THREADS
 #include "thread_sgi.h"
