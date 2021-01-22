@@ -128,7 +128,7 @@ PyThread_free_lock(PyThread_type_lock lock)
 {
   int thelock = (int) lock;
 
-  if (thelock < 0)
+  if (thelock == NULL)
     return;
 
   dprintf(("PyThread_free_lock(%p) called\n", lock));
