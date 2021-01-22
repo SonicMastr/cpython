@@ -116,6 +116,7 @@ PyThread_type_lock PyThread_allocate_lock(void)
   lock = sceKernelCreateMutex(name, SCE_KERNEL_MUTEX_ATTR_RECURSIVE, 1, NULL);
   if (lock < 0) {
     perror("mutex_init");
+    return NULL;
   }
 
   dprintf(("PyThread_allocate_lock() -> %p\n", lock));
