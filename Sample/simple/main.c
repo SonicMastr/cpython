@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 
 	Py_SetProgramName("app0:eboot.bin");
 	setenv("PYTHONHOME", "app0:", 1);
+	//setenv("PYTHONTHREADDEBUG", "1", 1);
 	Py_Initialize();
 
 	PyRun_SimpleString("import sys\n");

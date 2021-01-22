@@ -300,7 +300,7 @@ class _Condition(_Verbose):
     def _is_owned(self):
         # Return True if lock is owned by current_thread.
         # This method is called only if __lock doesn't have _is_owned().
-        if self.__lock.acquire(0):
+        if self.__lock.acquire(0) and not _sys.platform == 'vita':
             self.__lock.release()
             return False
         else:

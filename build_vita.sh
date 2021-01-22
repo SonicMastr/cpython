@@ -1,5 +1,5 @@
 echo -e "\033[1;32mCPython 2.7.18 Vita Port\033[0m"
-./configure --build=armv7 --host=arm-dolce-eabi --prefix="$DOLCESDK/arm-dolce-eabi" --enable-optimizations --disable-shared --without-threads --disable-ipv6 --without-signal-module CONFIG_SITE="config.site" CFLAGS="-Wl,-q,-z,nocopyreloc" CPPFLAGS="-Wl,-q,-z,nocopyreloc"
+./configure --build=armv7 --host=arm-dolce-eabi --prefix="$DOLCESDK/arm-dolce-eabi" --enable-optimizations --disable-shared --with-threads --disable-ipv6 --without-signal-module CONFIG_SITE="config.site" CFLAGS="-Wl,-q,-z,nocopyreloc" CPPFLAGS="-Wl,-q,-z,nocopyreloc"
 make clean
 make -j$(nproc) install
 
