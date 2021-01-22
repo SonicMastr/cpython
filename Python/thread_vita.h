@@ -43,11 +43,10 @@ typedef struct {
 } callobj;
 
 int bootstrap(SceSize args, void *call){
-  callobj *obj = (callobj*)call;
-  void (*func)(void*) = obj->func;
-  void *arg = obj->arg;
+  callobj obj = *((callobj*) call);
+  void (*func)(void*) = obj.func;
+  void *arg = obj.arg;
   func(arg);
-  free(obj);
   return 0;
 }
 
@@ -59,9 +58,7 @@ static atomic_t thread_count = { 0 };
 PyThread_start_new_thread(void (*func)(void *), void *arg)
 {
   char name[SCE_UID_NAMELEN];
-  callobj *obj;
-
-  dprintf(("PyThread_start_new_thread called\n"));
+  callobj obj;
 
   atomic_add(1, &thread_count);
   PyOS_snprintf(name, sizeof(name),
@@ -70,23 +67,18 @@ PyThread_start_new_thread(void (*func)(void *), void *arg)
    * so well do it here
    */
 
-  obj = malloc(sizeof(callobj));
-  if(!obj)
-    return -1;
-  obj->func = func;
-  obj->arg = arg;
+  obj.func = func;
+  obj.arg = arg;
 
   SceUID thid = sceKernelCreateThread(name, (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
 
   if(thid < 0) {
-    free(obj);
     return -1;
   }
 
-  int success = sceKernelStartThread(thid, sizeof(obj), obj);
+  int success = sceKernelStartThread(thid, sizeof(callobj), &obj);
 
   if(success != 0) {
-    free(obj);
     return -1;
   }
 
