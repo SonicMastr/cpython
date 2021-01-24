@@ -2,6 +2,12 @@
 
 #define SCE_KERNEL_PRIO_USER_NORMAL 96
 
+#if !defined(THREAD_STACK_SIZE)
+#define THREAD_STACK_SIZE       0x10000
+#endif
+
+#define VITA_STACKSIZE(x)        (x ? x : THREAD_STACK_SIZE)
+
 typedef struct {
 	volatile int counter;
 } atomic_t;
@@ -70,16 +76,20 @@ PyThread_start_new_thread(void (*func)(void *), void *arg)
   obj->func = func;
   obj->arg = arg;
 
-  SceUID thid = sceKernelCreateThread(name, (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, _pythread_stacksize, 0, 0, NULL);
+  SceUID thid = sceKernelCreateThread(name, (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
+
   if(thid < 0) {
     free(obj);
     return -1;
   }
+
   int success = sceKernelStartThread(thid, sizeof(obj), obj);
+
   if(success != 0) {
     free(obj);
     return -1;
   }
+
   return 0;
 }
 
