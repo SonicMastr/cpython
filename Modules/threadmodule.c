@@ -616,8 +616,11 @@ t_bootstrap(void *boot_raw)
 
     tstate = boot->tstate;
     tstate->thread_id = PyThread_get_thread_ident();
+    printf("Try intialize State\n");
     _PyThreadState_Init(tstate);
+    printf("Intialized State?\n");
     PyEval_AcquireThread(tstate);
+    printf("Aquired Lock? It think?\n");
     nb_threads++;
     res = PyEval_CallObjectWithKeywords(
         boot->func, boot->args, boot->keyw);
@@ -693,6 +696,7 @@ thread_PyThread_start_new_thread(PyObject *self, PyObject *fargs)
     Py_INCREF(args);
     Py_XINCREF(keyw);
     PyEval_InitThreads(); /* Start the interpreter's thread-awareness */
+    printf("Func: 0x%08x Args: 0x%08x\n", t_bootstrap, (void*) boot);
     ident = PyThread_start_new_thread(t_bootstrap, (void*) boot);
     if (ident == -1) {
         PyErr_SetString(ThreadError, "can't start new thread");

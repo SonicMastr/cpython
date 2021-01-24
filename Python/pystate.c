@@ -223,6 +223,7 @@ void
 _PyThreadState_Init(PyThreadState *tstate)
 {
 #ifdef WITH_THREAD
+    printf("Blah Blah\n");
     _PyGILState_NoteThreadState(tstate);
 #endif
 }
@@ -567,6 +568,7 @@ _PyGILState_NoteThreadState(PyThreadState* tstate)
           state created for that given OS level thread will "win",
           which seems reasonable behaviour.
     */
+    printf("Set that key value\n");
     if (PyThread_set_key_value(autoTLSkey, (void *)tstate) < 0)
         Py_FatalError("Couldn't create autoTLSkey mapping");
 

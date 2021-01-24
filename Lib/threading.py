@@ -798,6 +798,7 @@ class Thread(_Verbose):
                 _sys.setprofile(_profile_hook)
 
             try:
+                print("Running New Thread");
                 self.run()
             except SystemExit:
                 if __debug__:

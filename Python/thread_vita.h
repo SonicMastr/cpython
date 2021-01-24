@@ -43,11 +43,12 @@ typedef struct {
 } callobj;
 
 int bootstrap(SceSize args, void *call){
-  callobj *obj = (callobj*)call;
-  void (*func)(void*) = obj->func;
-  void *arg = obj->arg;
-  func(arg);
-  free(obj);
+  callobj obj = *((callobj*) call);
+  void (*func)(void*) = obj.func;
+  void *arg = obj.arg;
+  printf("Calling Bootstrap: Func: 0x%08x Args: 0x%08x\n", func, arg);
+  (*func)(arg);
+  printf("Ummmm: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
   return 0;
 }
 
@@ -59,7 +60,7 @@ static atomic_t thread_count = { 0 };
 PyThread_start_new_thread(void (*func)(void *), void *arg)
 {
   char name[SCE_UID_NAMELEN];
-  callobj *obj;
+  callobj obj;
 
   dprintf(("PyThread_start_new_thread called\n"));
 
@@ -70,23 +71,24 @@ PyThread_start_new_thread(void (*func)(void *), void *arg)
    * so well do it here
    */
 
-  obj = malloc(sizeof(callobj));
-  if(!obj)
-    return -1;
-  obj->func = func;
-  obj->arg = arg;
+  obj.func = func;
+  obj.arg = arg;
 
   SceUID thid = sceKernelCreateThread(name, (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
 
+  printf("Created Thread: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
+
   if(thid < 0) {
-    free(obj);
     return -1;
   }
 
-  int success = sceKernelStartThread(thid, sizeof(obj), obj);
+  printf("Starting Thread: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
+
+  int success = sceKernelStartThread(thid, sizeof(callobj), &obj);
+
+  printf("Done?: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
 
   if(success != 0) {
-    free(obj);
     return -1;
   }
 
@@ -123,7 +125,7 @@ PyThread_type_lock PyThread_allocate_lock(void)
   atomic_add(1, &lock_count);
   PyOS_snprintf(name, sizeof(name), "python lock (%d)", lock_count.counter);
 
-  lock = sceKernelCreateMutex(name, SCE_KERNEL_MUTEX_ATTR_RECURSIVE, 1, NULL);
+  lock = sceKernelCreateMutex(name, SCE_KERNEL_MUTEX_ATTR_RECURSIVE, 0, NULL);
   if (lock < 0) {
     perror("mutex_init");
     return NULL;
