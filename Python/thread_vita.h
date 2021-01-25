@@ -8,26 +8,6 @@
 
 #define VITA_STACKSIZE(x)        (x ? x : THREAD_STACK_SIZE)
 
-typedef struct {
-	volatile int counter;
-} atomic_t;
-
-static inline void atomic_add(int i, atomic_t *v)
-{
-	unsigned long tmp;
-	int result;
-
-	__asm__ __volatile__("@ atomic_add\n"
-"1:	ldrex	%0, [%2]\n"
-"	add	%0, %0, %3\n"
-"	strex	%1, %0, [%2]\n"
-"	teq	%1, #0\n"
-"	bne	1b"
-	: "=&r" (result), "=&r" (tmp)
-	: "r" (&v->counter), "Ir" (i)
-	: "cc");
-}
-
 /*
  * Initialization.
  */
@@ -42,17 +22,18 @@ typedef struct {
   void *arg;
 } callobj;
 
-int bootstrap(SceSize args, void *call){
-  callobj obj = *((callobj*) call);
-  void (*func)(void*) = obj.func;
-  void *arg = obj.arg;
-  printf("Calling Bootstrap: Func: 0x%08x Args: 0x%08x\n", func, arg);
+static int bootstrap(SceSize args, void *call){
+  callobj *obj = *(callobj**) call;
+  void (*func)(void*) = obj->func;
+  void *arg = obj->arg;
+
+  printf("Calling Bootstrap: Func: 0x%08x Args: 0x%08x\n", (*func), arg);
   (*func)(arg);
-  printf("Ummmm: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
+  printf("Ummmm: Func: 0x%08x Args: 0x%08x\n", obj->func, obj->arg);
+  free(obj);
   return 0;
 }
 
-static atomic_t thread_count = { 0 };
 /*
  * Thread support.
  */
@@ -60,39 +41,38 @@ static atomic_t thread_count = { 0 };
 PyThread_start_new_thread(void (*func)(void *), void *arg)
 {
   char name[SCE_UID_NAMELEN];
-  callobj obj;
+  callobj* obj;
 
   dprintf(("PyThread_start_new_thread called\n"));
 
-  atomic_add(1, &thread_count);
-  PyOS_snprintf(name, sizeof(name),
-      "python thread (%d)", thread_count.counter );
-  /* looks like solaris detaches the thread to never rejoin
-   * so well do it here
-   */
+  obj = (callobj *)malloc(sizeof(callobj));
 
-  obj.func = func;
-  obj.arg = arg;
+  obj->func = func;
+  obj->arg = arg;
 
-  SceUID thid = sceKernelCreateThread(name, (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
 
-  printf("Created Thread: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
+  SceUID thid = sceKernelCreateThread("python thread", (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
+
+  printf("Created Thread: Func: 0x%08x Args: 0x%08x\n", obj->func, obj->arg);
 
   if(thid < 0) {
     return -1;
   }
 
-  printf("Starting Thread: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
+  printf("Starting Thread: Func: 0x%08x Args: 0x%08x\n", obj->func, obj->arg);
 
-  int success = sceKernelStartThread(thid, sizeof(callobj), &obj);
+//  (*func)(arg);
 
-  printf("Done?: Func: 0x%08x Args: 0x%08x\n", obj.func, obj.arg);
+  int success = sceKernelStartThread(thid, sizeof(obj), &obj);
+
+
+  printf("Done?: Func: 0x%08x Args: 0x%08x\n", (*func), obj->arg);
 
   if(success != 0) {
     return -1;
   }
 
-  return 0;
+  return (long)thid;
 }
 
   long
@@ -106,70 +86,66 @@ PyThread_get_thread_ident(void)
 PyThread_exit_thread(void)
 {
   dprintf(("PyThread_exit_thread called\n"));
-  sceKernelExitThread(0);
+  sceKernelExitDeleteThread(0);
 }
 
 /*
  * Lock support.
  */
 
-static atomic_t lock_count = { 0 };
-
 PyThread_type_lock PyThread_allocate_lock(void)
 {
-  int lock;
+  SceUID* lock = (SceUID*)malloc(sizeof(SceUID));
+
   char name[SCE_UID_NAMELEN];
 
   dprintf(("PyThread_allocate_lock called\n"));
 
-  atomic_add(1, &lock_count);
-  PyOS_snprintf(name, sizeof(name), "python lock (%d)", lock_count.counter);
-
-  lock = sceKernelCreateMutex(name, SCE_KERNEL_MUTEX_ATTR_RECURSIVE, 0, NULL);
-  if (lock < 0) {
+  *lock = sceKernelCreateMutex("python mutex", 0/*SCE_KERNEL_MUTEX_ATTR_RECURSIVE*/, 0, NULL);
+  if (*lock < 0) {
     perror("mutex_init");
     return NULL;
   }
 
-  dprintf(("PyThread_allocate_lock() -> %p\n", lock));
+  dprintf(("PyThread_allocate_lock() -> %p\n", (SceUID)(*lock)));
   return (PyThread_type_lock) lock;
 }
 
   void
 PyThread_free_lock(PyThread_type_lock lock)
 {
-  int thelock = (int) lock;
+  SceUID* thelock = (SceUID*) lock;
 
   if (thelock == NULL)
     return;
 
-  dprintf(("PyThread_free_lock(%p) called\n", lock));
-  sceKernelDeleteMutex(thelock);
+  dprintf(("PyThread_free_lock(%p) called\n", (SceUID)(*thelock)));
+  sceKernelDeleteMutex(*thelock);
 }
 
   int
 PyThread_acquire_lock(PyThread_type_lock lock, int waitflag)
 {
   int success, status = 0;
-  int thelock = (int) lock;
+  SceUID* thelock = (SceUID*) lock;
 
-  dprintf(("PyThread_acquire_lock(%p, %d) called\n", lock, waitflag));
+  dprintf(("PyThread_acquire_lock(%p, %d) called\n", (SceUID)(*thelock), waitflag));
   if (waitflag) {             /* blocking */
-    status = sceKernelLockMutex(thelock, 1, NULL);
+    status = sceKernelLockMutex(*thelock, 1, NULL);
   } else {                    /* non blocking */
-    status = sceKernelTryLockMutex(thelock, 1);
+    status = sceKernelTryLockMutex(*thelock, 1);
   }
   success = (status >= 0) ? 1 : 0;
-  dprintf(("PyThread_acquire_lock(%p, %d) -> %d\n", lock, waitflag, success));
+  dprintf(("PyThread_acquire_lock(%p, %d) -> %d\n", (SceUID)(*thelock), waitflag, success));
   return success;
 }
 
   void
 PyThread_release_lock(PyThread_type_lock lock)
 {
-  int thelock = (int) lock;
-  dprintf(("PyThread_release_lock(%p) called\n", lock));
-  sceKernelUnlockMutex(thelock, 1);
+  SceUID* thelock = (SceUID*) lock;
+  dprintf(("PyThread_release_lock(%p) called\n", (SceUID)(*thelock)));
+  sceKernelUnlockMutex(*thelock, 1);
 }
 
 /* minimum/maximum thread stack sizes supported */
