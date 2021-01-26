@@ -53,20 +53,11 @@ PyThread_start_new_thread(void (*func)(void *), void *arg)
 
   SceUID thid = sceKernelCreateThread("python thread", (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
 
-  printf("Created Thread: Func: 0x%08x Args: 0x%08x\n", obj->func, obj->arg);
-
   if(thid < 0) {
     return -1;
   }
-
-  printf("Starting Thread: Func: 0x%08x Args: 0x%08x\n", obj->func, obj->arg);
-
 //  (*func)(arg);
-
   int success = sceKernelStartThread(thid, sizeof(obj), &obj);
-
-
-  printf("Done?: Func: 0x%08x Args: 0x%08x\n", (*func), obj->arg);
 
   if(success != 0) {
     return -1;
@@ -104,6 +95,7 @@ PyThread_type_lock PyThread_allocate_lock(void)
   *lock = sceKernelCreateMutex("python mutex", 0/*SCE_KERNEL_MUTEX_ATTR_RECURSIVE*/, 0, NULL);
   if (*lock < 0) {
     perror("mutex_init");
+    free(lock);
     return NULL;
   }
 
@@ -121,6 +113,7 @@ PyThread_free_lock(PyThread_type_lock lock)
 
   dprintf(("PyThread_free_lock(%p) called\n", (SceUID)(*thelock)));
   sceKernelDeleteMutex(*thelock);
+  free(thelock);
 }
 
   int

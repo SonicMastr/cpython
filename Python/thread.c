@@ -277,13 +277,9 @@ find_key(int key, void *value)
     struct key *p, *prev_p;
     long id = PyThread_get_thread_ident();
 
-    printf("Got Thread Ident\n");
-
     if (!keymutex)
         return NULL;
-    printf("Get Lock\n");
     PyThread_acquire_lock(keymutex, 1);
-    printf("Got Lock\n");
     prev_p = NULL;
     for (p = keyhead; p != NULL; p = p->next) {
         if (p->id == id && p->key == key)
@@ -311,7 +307,6 @@ find_key(int key, void *value)
         keyhead = p;
     }
  Done:
-    printf("ReleaseLock\n");
     PyThread_release_lock(keymutex);
     return p;
 }
@@ -363,7 +358,6 @@ PyThread_set_key_value(int key, void *value)
     struct key *p;
 
     assert(value != NULL);
-    printf("Finding Key\n");
     p = find_key(key, value);
     if (p == NULL)
         return -1;

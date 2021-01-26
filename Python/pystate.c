@@ -223,7 +223,6 @@ void
 _PyThreadState_Init(PyThreadState *tstate)
 {
 #ifdef WITH_THREAD
-    printf("Blah Blah\n");
     _PyGILState_NoteThreadState(tstate);
 #endif
 }
