@@ -9,6 +9,26 @@
 
 #define VITA_STACKSIZE(x)        (x ? x : THREAD_STACK_SIZE)
 
+typedef struct {
+	volatile int counter;
+} atomic_t;
+
+static inline void atomic_add(int i, atomic_t *v)
+{
+	unsigned long tmp;
+	int result;
+
+	__asm__ __volatile__("@ atomic_add\n"
+"1:	ldrex	%0, [%2]\n"
+"	add	%0, %0, %3\n"
+"	strex	%1, %0, [%2]\n"
+"	teq	%1, #0\n"
+"	bne	1b"
+	: "=&r" (result), "=&r" (tmp)
+	: "r" (&v->counter), "Ir" (i)
+	: "cc");
+}
+
 /*
  * Initialization.
  */
@@ -36,6 +56,8 @@ static int bootstrap(SceSize args, void *call){
 /*
  * Thread support.
  */
+ static atomic_t thread_count = { 0 };
+
   long
 PyThread_start_new_thread(void (*func)(void *), void *arg)
 {
@@ -44,18 +66,22 @@ PyThread_start_new_thread(void (*func)(void *), void *arg)
 
   dprintf(("PyThread_start_new_thread called\n"));
 
+  atomic_add(1, &thread_count);
+  PyOS_snprintf(name, sizeof(name),
+      "python thread (%d)", thread_count.counter );
+
   obj = (callobj *)malloc(sizeof(callobj));
 
   obj->func = func;
   obj->arg = arg;
 
 
-  SceUID thid = sceKernelCreateThread("python thread", (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
+  SceUID thid = sceKernelCreateThread(name, (SceKernelThreadEntry)bootstrap, SCE_KERNEL_PRIO_USER_NORMAL, VITA_STACKSIZE(_pythread_stacksize), 0, 0, NULL);
 
   if(thid < 0) {
     return -1;
   }
-//  (*func)(arg);
+
   int success = sceKernelStartThread(thid, sizeof(obj), &obj);
 
   if(success != 0) {
@@ -83,6 +109,7 @@ PyThread_exit_thread(void)
  * Lock support.
  */
 
+static atomic_t lock_count = { 0 };
 PyThread_type_lock PyThread_allocate_lock(void)
 {
   SceUID* lock = (SceUID*)malloc(sizeof(SceUID));
@@ -91,7 +118,10 @@ PyThread_type_lock PyThread_allocate_lock(void)
 
   dprintf(("PyThread_allocate_lock called\n"));
 
-  *lock = sceKernelCreateSema("Python_Sem", 0, 1, SEM_VALUE_MAX, NULL);
+  atomic_add(1, &lock_count);
+  PyOS_snprintf(name, sizeof(name), "python lock (%d)", lock_count.counter);
+
+  *lock = sceKernelCreateSema(name, 0, 1, SEM_VALUE_MAX, NULL);
   if (*lock < 0) {
     perror("sem_init");
     free(lock);
