@@ -28,9 +28,7 @@ static int bootstrap(SceSize args, void *call){
   void (*func)(void*) = obj->func;
   void *arg = obj->arg;
 
-  printf("Calling Bootstrap: Func: 0x%08x Args: 0x%08x\n", (*func), arg);
   (*func)(arg);
-  printf("Ummmm: Func: 0x%08x Args: 0x%08x\n", obj->func, obj->arg);
   free(obj);
   return 0;
 }
