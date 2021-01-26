@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 	//setenv("PYTHONTHREADDEBUG", "1", 1);
 	Py_Initialize();
 
-	PyRun_SimpleString("import sys\n");
+	PyRun_SimpleString("import sys\nsys.path.append('ux0:/data/lib/python2.7')\nsys.path.append('ux0:/data/lib/python27.zip')\n");  // Add support for External Modules
 	PyRun_SimpleString("import os\n");
 	PyRun_SimpleString("print os.name\n");
 	PyRun_SimpleString("print sys.platform\n");
