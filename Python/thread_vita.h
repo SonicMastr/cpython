@@ -1,6 +1,7 @@
 #include <psp2/kernel/threadmgr.h>
 
 #define SCE_KERNEL_PRIO_USER_NORMAL 96
+#define SEM_VALUE_MAX   (2147483647)
 
 #if !defined(THREAD_STACK_SIZE)
 #define THREAD_STACK_SIZE       0x10000
@@ -92,9 +93,9 @@ PyThread_type_lock PyThread_allocate_lock(void)
 
   dprintf(("PyThread_allocate_lock called\n"));
 
-  *lock = sceKernelCreateMutex("python mutex", 0/*SCE_KERNEL_MUTEX_ATTR_RECURSIVE*/, 0, NULL);
+  *lock = sceKernelCreateSema("Python_Sem", 0, 1, SEM_VALUE_MAX, NULL);
   if (*lock < 0) {
-    perror("mutex_init");
+    perror("sem_init");
     free(lock);
     return NULL;
   }
@@ -112,7 +113,7 @@ PyThread_free_lock(PyThread_type_lock lock)
     return;
 
   dprintf(("PyThread_free_lock(%p) called\n", (SceUID)(*thelock)));
-  sceKernelDeleteMutex(*thelock);
+  sceKernelDeleteSema(*thelock);
   free(thelock);
 }
 
@@ -123,13 +124,14 @@ PyThread_acquire_lock(PyThread_type_lock lock, int waitflag)
   SceUID* thelock = (SceUID*) lock;
 
   dprintf(("PyThread_acquire_lock(%p, %d) called\n", (SceUID)(*thelock), waitflag));
-  if (waitflag) {             /* blocking */
-    status = sceKernelLockMutex(*thelock, 1, NULL);
-  } else {                    /* non blocking */
-    status = sceKernelTryLockMutex(*thelock, 1);
-  }
+
+  if (waitflag) /* blocking */
+    status = sceKernelWaitSema(*thelock, 1, NULL);
+  else /* non-blocking */
+    status = sceKernelPollSema(*thelock, 1);
+
   success = (status >= 0) ? 1 : 0;
-  dprintf(("PyThread_acquire_lock(%p, %d) -> %d\n", (SceUID)(*thelock), waitflag, success));
+  dprintf(("PyThread_acquire_lock(%p, %d) -> %d : (0x%08x)\n", (SceUID)(*thelock), waitflag, success, status));
   return success;
 }
 
@@ -138,7 +140,7 @@ PyThread_release_lock(PyThread_type_lock lock)
 {
   SceUID* thelock = (SceUID*) lock;
   dprintf(("PyThread_release_lock(%p) called\n", (SceUID)(*thelock)));
-  sceKernelUnlockMutex(*thelock, 1);
+  sceKernelSignalSema(*thelock, 1);
 }
 
 /* minimum/maximum thread stack sizes supported */
