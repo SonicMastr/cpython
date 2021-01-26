@@ -70,13 +70,11 @@ static PyObject *
 lock_PyThread_release_lock(lockobject *self)
 {
     /* Sanity check: the lock must be locked */
-#ifndef __vita__
     if (PyThread_acquire_lock(self->lock_lock, 0)) {
         PyThread_release_lock(self->lock_lock);
         PyErr_SetString(ThreadError, "release unlocked lock");
         return NULL;
     }
-#endif
 
     PyThread_release_lock(self->lock_lock);
     Py_INCREF(Py_None);

@@ -4241,7 +4241,6 @@ PyEval_CallObjectWithKeywords(PyObject *func, PyObject *arg, PyObject *kw)
         Py_DECREF(arg);
         return NULL;
     }
-
     result = PyObject_Call(func, arg, kw);
     Py_DECREF(arg);
     return result;
