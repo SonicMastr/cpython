@@ -195,6 +195,13 @@ corresponding Unix manual entries for more information on calls.");
 #define fsync _commit
 #else
 /* Unix functions that the configure script doesn't check for */
+#if defined(__VITA__)
+#define HAVE_OPENDIR    1
+#undef HAVE_FSYNC
+#undef HAVE_FDATASYNC
+#undef HAVE_FCHDIR
+#undef HAVE_SYMLINK
+#else
 #ifndef __VXWORKS__
 #define HAVE_EXECV      1
 #define HAVE_FORK       1
@@ -213,6 +220,7 @@ corresponding Unix manual entries for more information on calls.");
 #define HAVE_SYSTEM     1
 #define HAVE_WAIT       1
 #define HAVE_TTYNAME    1
+#endif /* __VITA__ */
 #endif  /* _MSC_VER */
 #endif  /* ! __WATCOMC__ || __QNX__ */
 
@@ -383,6 +391,9 @@ extern char        *ctermid_r(char *);
 #ifdef MS_WINDOWS
 #define INITFUNC PyInit_nt
 #define MODNAME "nt"
+#elif defined(__VITA__)
+#define INITFUNC PyInit_vita
+#define MODNAME "vita"
 #else
 #define INITFUNC PyInit_posix
 #define MODNAME "posix"
@@ -409,6 +420,33 @@ extern char        *ctermid_r(char *);
 #ifdef _Py_MEMORY_SANITIZER
 # include <sanitizer/msan_interface.h>
 #endif
+
+#ifdef __VITA__
+
+#include <string.h>
+
+#define getcwd realgetcwd
+
+#ifndef PWD_PATH
+#define PWD_PATH "app0:"
+#endif
+
+char *
+realgetcwd(char *buf, int size)
+{
+    if (size <= 0) {
+        errno = EINVAL;
+        return NULL;
+    }
+    if (size < sizeof(PWD_PATH)) {
+        errno = ERANGE;
+        return NULL;
+    }
+    strncpy(buf, PWD_PATH, size);
+    return buf;
+}
+
+#endif /* __VITA__ */
 
 #ifdef HAVE_FORK
 static void
@@ -12648,7 +12686,11 @@ DirEntry_fetch_stat(DirEntry *self, int follow_symlinks)
         if (follow_symlinks)
             result = STAT(path, &st);
         else
+#ifdef __VITA__
+            result = STAT(path, &st);
+#else
             result = LSTAT(path, &st);
+#endif
     }
     Py_DECREF(ub);
 
@@ -13040,8 +13082,10 @@ join_path_filename(const char *path_narrow, const char* filename, Py_ssize_t fil
 }
 
 static PyObject *
-DirEntry_from_posix_info(path_t *path, const char *name, Py_ssize_t name_len,
-                         ino_t d_ino
+DirEntry_from_posix_info(path_t *path, const char *name, Py_ssize_t name_len
+#ifndef __VITA__
+                        , ino_t d_ino
+#endif
 #ifdef HAVE_DIRENT_D_TYPE
                          , unsigned char d_type
 #endif
@@ -13093,7 +13137,9 @@ DirEntry_from_posix_info(path_t *path, const char *name, Py_ssize_t name_len,
 #ifdef HAVE_DIRENT_D_TYPE
     entry->d_type = d_type;
 #endif
+#ifndef __VITA__
     entry->d_ino = d_ino;
+#endif
 
     return (PyObject *)entry;
 
@@ -13242,9 +13288,12 @@ ScandirIterator_iternext(ScandirIterator *iterator)
                  (name_len == 1 || (direntp->d_name[1] == '.' && name_len == 2));
         if (!is_dot) {
             entry = DirEntry_from_posix_info(&iterator->path, direntp->d_name,
-                                            name_len, direntp->d_ino
+                                            name_len
+#ifndef __VITA__
+                                            ,direntp->d_ino
+#endif
 #ifdef HAVE_DIRENT_D_TYPE
-                                            , direntp->d_type
+                                            ,direntp->d_type
 #endif
                                             );
             if (!entry)
@@ -13732,10 +13781,16 @@ static PyMethodDef posix_methods[] = {
     OS_STAT_METHODDEF
     OS_ACCESS_METHODDEF
     OS_TTYNAME_METHODDEF
+#ifdef HAVE_CHDIR
     OS_CHDIR_METHODDEF
+#endif
     OS_CHFLAGS_METHODDEF
+#ifdef HAVE_CHMOD
     OS_CHMOD_METHODDEF
+#endif
+#ifdef HAVE_FCHMOD
     OS_FCHMOD_METHODDEF
+#endif
     OS_LCHMOD_METHODDEF
     OS_CHOWN_METHODDEF
     OS_FCHOWN_METHODDEF
@@ -13748,7 +13803,9 @@ static PyMethodDef posix_methods[] = {
     OS_LINK_METHODDEF
     OS_LISTDIR_METHODDEF
     OS_LSTAT_METHODDEF
+#ifdef HAVE_MKDIR
     OS_MKDIR_METHODDEF
+#endif
     OS_NICE_METHODDEF
     OS_GETPRIORITY_METHODDEF
     OS_SETPRIORITY_METHODDEF
@@ -13758,14 +13815,20 @@ static PyMethodDef posix_methods[] = {
     OS_COPY_FILE_RANGE_METHODDEF
     OS_RENAME_METHODDEF
     OS_REPLACE_METHODDEF
+#ifdef HAVE_RMDIR
     OS_RMDIR_METHODDEF
+#endif
     OS_SYMLINK_METHODDEF
     OS_SYSTEM_METHODDEF
+#ifdef HAVE_UMASK
     OS_UMASK_METHODDEF
+#endif
     OS_UNAME_METHODDEF
     OS_UNLINK_METHODDEF
     OS_REMOVE_METHODDEF
+#ifdef HAVE_UTIME
     OS_UTIME_METHODDEF
+#endif
     OS_TIMES_METHODDEF
     OS__EXIT_METHODDEF
     OS__FCOPYFILE_METHODDEF

@@ -495,8 +495,9 @@ pyurandom(void *buffer, Py_ssize_t size, int blocking, int raise)
 
 #ifdef MS_WINDOWS
     return win32_urandom((unsigned char *)buffer, size, raise);
-#else
-
+#elif defined(__VITA__)
+    return sceKernelGetRandomNumber(buffer, size);
+# else
 #if defined(PY_GETRANDOM) || defined(PY_GETENTROPY)
 #ifdef PY_GETRANDOM
     res = py_getrandom(buffer, size, blocking, raise);

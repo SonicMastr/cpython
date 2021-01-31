@@ -70,6 +70,15 @@ _INSTALL_SCHEMES = {
         'scripts': '{userbase}/bin',
         'data': '{userbase}',
         },
+    'vita_user': {
+        'stdlib': 'app0:/lib/python{py_version_short}',
+        'platstdlib': 'app0:/lib/python{py_version_short}',
+        'purelib': 'app0:/lib/python{py_version_short}/site-packages',
+        'platlib': 'app0:/lib/python{py_version_short}/site-packages',
+        'include': 'app0:/include/python{py_version_short}',
+        'scripts': 'app0:/bin',
+        'data'   : 'app0:',
+        },
     'osx_framework_user': {
         'stdlib': '{userbase}/lib/python',
         'platstdlib': '{userbase}/lib/python',

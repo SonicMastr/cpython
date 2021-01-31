@@ -33,6 +33,33 @@ extern int winerror_to_errno(int);
 int _Py_open_cloexec_works = -1;
 #endif
 
+#ifdef __VITA__
+
+#include <string.h>
+
+#define getcwd _realgetcwd
+
+#ifndef PWD_PATH
+#define PWD_PATH "app0:"
+#endif
+
+char *
+_realgetcwd(char *buf, int size)
+{
+    if (size <= 0) {
+        errno = EINVAL;
+        return NULL;
+    }
+    if (size < sizeof(PWD_PATH)) {
+        errno = ERANGE;
+        return NULL;
+    }
+    strncpy(buf, PWD_PATH, size);
+    return buf;
+}
+
+#endif /* __VITA__ */
+
 
 static int
 get_surrogateescape(_Py_error_handler errors, int *surrogateescape)

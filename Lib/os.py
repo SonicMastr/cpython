@@ -87,6 +87,20 @@ elif 'nt' in _names:
     except ImportError:
         pass
 
+elif 'vita' in _names:
+    name = 'vita'
+    linesep = '\r\n'
+    from vita import *
+    try:
+        from vita import _exit
+    except ImportError:
+        pass
+    import vitapath as path
+
+    import vita
+    __all__.extend(_get_exports_list(vita))
+    del vita
+
 else:
     raise ImportError('no os specific module found')
 

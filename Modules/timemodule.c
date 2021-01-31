@@ -42,6 +42,10 @@
 #define _Py_timezone _timezone
 #define _Py_daylight _daylight
 #define _Py_tzname _tzname
+#elif defined(__VITA__)
+#define _Py_timezone 0
+#define _Py_daylight 0
+#define _Py_tzname 
 #else
 #define _Py_timezone timezone
 #define _Py_daylight daylight
@@ -1611,6 +1615,7 @@ init_timezone(PyObject *m)
         return -1;
     }
 #else
+#ifndef __VITA__
     otz0 = PyUnicode_DecodeLocale(_Py_tzname[0], "surrogateescape");
     if (otz0 == NULL) {
         return -1;
@@ -1620,6 +1625,7 @@ init_timezone(PyObject *m)
         Py_DECREF(otz0);
         return -1;
     }
+#endif
 #endif // MS_WINDOWS
     PyObject *tzname_obj = Py_BuildValue("(NN)", otz0, otz1);
     if (tzname_obj == NULL) {

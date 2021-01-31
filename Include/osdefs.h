@@ -14,6 +14,13 @@ extern "C" {
 #define DELIM L';'
 #endif
 
+#ifdef __VITA__
+#include <psp2/kernel/iofilemgr.h>
+#define SEP '/'
+#define MAXPATHLEN SCE_IO_MAX_PATH_LENGTH
+#define DELIM ';'
+#endif
+
 #ifdef __VXWORKS__
 #define DELIM L';'
 #endif

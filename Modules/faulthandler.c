@@ -932,6 +932,7 @@ faulthandler_suppress_crash_report(void)
 #endif
 
 #ifdef HAVE_SYS_RESOURCE_H
+#ifndef __VITA__
     struct rlimit rl;
 
     /* Disable creation of core dump */
@@ -939,6 +940,7 @@ faulthandler_suppress_crash_report(void)
         rl.rlim_cur = 0;
         setrlimit(RLIMIT_CORE, &rl);
     }
+#endif
 #endif
 
 #ifdef _MSC_VER

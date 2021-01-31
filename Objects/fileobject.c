@@ -4,6 +4,8 @@
 #include "Python.h"
 #include "pycore_pystate.h"
 
+#include <stdio.h>
+
 #if defined(HAVE_GETC_UNLOCKED) && !defined(_Py_MEMORY_SANITIZER)
 /* clang MemorySanitizer doesn't yet understand getc_unlocked. */
 #define GETC(f) getc_unlocked(f)

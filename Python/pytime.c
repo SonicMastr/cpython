@@ -7,6 +7,13 @@
 #include <mach/mach_time.h>   /* mach_absolute_time(), mach_timebase_info() */
 #endif
 
+#if defined (__VITA__)
+#include <psp2/rtc.h>
+#include <psp2/kernel/processmgr.h>
+#include <psp2/kernel/clib.h>
+#define CLOCK_MONOTONIC 0
+#endif
+
 #define _PyTime_check_mul_overflow(a, b) \
     (assert(b > 0), \
      (_PyTime_t)(a) < _PyTime_MIN / (_PyTime_t)(b) \
@@ -285,7 +292,7 @@ _PyTime_FromNanosecondsObject(_PyTime_t *tp, PyObject *obj)
     return 0;
 }
 
-#ifdef HAVE_CLOCK_GETTIME
+#if defined (HAVE_CLOCK_GETTIME) || defined (__VITA__)
 static int
 pytime_fromtimespec(_PyTime_t *tp, struct timespec *ts, int raise)
 {
@@ -681,7 +688,38 @@ pygettimeofday(_PyTime_t *tp, _Py_clock_info_t *info, int raise)
         info->adjustable = 1;
     }
 
-#else   /* MS_WINDOWS */
+#elif defined (__VITA__)
+    SceKernelSysClock ticks;
+    struct timespec ts;
+    time_t seconds;
+    SceDateTime time;
+    int ret = sceRtcGetCurrentClockLocalTime(&time);
+
+    if (ret < 0) {
+        if (raise) {
+            PyErr_SetFromErrno(PyExc_OSError);
+        }
+        return -1;
+    }
+    sceRtcGetTime_t(&time, &seconds);
+
+    ts.tv_sec = seconds;
+    ts.tv_nsec = time.microsecond * 1000;
+
+    if (info) {
+        info->implementation = "sceRtcGetCurrentClockLocalTime()";
+        info->resolution = 1e-9;
+        info->monotonic = 0;
+        info->adjustable = 1;
+    }
+
+    if (pytime_fromtimespec(tp, &ts, raise) < 0) {
+        return -1;
+    }
+
+    return 0;
+#else
+
     int err;
 #ifdef HAVE_CLOCK_GETTIME
     struct timespec ts;
@@ -877,6 +915,33 @@ pymonotonic(_PyTime_t *tp, _Py_clock_info_t *info, int raise)
         info->adjustable = 0;
     }
 
+#elif defined (__VITA__)
+    SceKernelSysClock ticks;
+    struct timespec ts;
+    int ret = sceKernelGetProcessTime(&ticks);
+
+    if (ret < 0) {
+        if (raise) {
+            PyErr_SetFromErrno(PyExc_OSError);
+        }
+        return -1;
+    }
+
+    ts.tv_sec = ticks.quad_t/(1000*1000);
+    ts.tv_nsec = (ticks.quad_t * 1000) % (1000*1000*1000);
+
+    if (info) {
+        info->implementation = "sceKernelGetProcessTime()";
+        info->resolution = ts.tv_sec + ts.tv_nsec * 1e-9;
+        info->monotonic = 1;
+        info->adjustable = 0;
+    }
+
+    if (pytime_fromtimespec(tp, &ts, raise) < 0) {
+        return -1;
+    }
+
+    return 0;
 #else
     struct timespec ts;
 #ifdef CLOCK_HIGHRES
