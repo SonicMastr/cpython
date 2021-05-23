@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake" CACHE PATH "DolceSDK toolchain file")
-set(DOLCESDK_CMAKE_FILE "$ENV{DOLCESDK}/share/dolce.cmake" CACHE PATH "DolceSDK CMake functions file")
-include("${DOLCESDK_CMAKE_FILE}" REQUIRED)
+set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "VITASDK toolchain file")
+set(VITASDK_CMAKE_FILE "$ENV{VITASDK}/share/vita.cmake" CACHE PATH "VITASDK CMake functions file")
+include("${VITASDK_CMAKE_FILE}" REQUIRED)
 
 project(cpython-simple-example LANGUAGES C)
 
@@ -12,8 +12,12 @@ add_compile_options(
   -fsingle-precision-constant -fno-common
 )
 
+add_link_options(
+  -Wl,--allow-multiple-definition
+)
+
 include_directories(
-  "$ENV{DOLCESDK}/arm-dolce-eabi/include/python2.7"
+  "$ENV{VITASDK}/arm-vita-eabi/include/python2.7"
 )
 
 # Build self
@@ -35,13 +39,13 @@ target_link_libraries("${ELF}"
   SceNetCtl_stub
   SceSsl_stub
   SceSysmodule_stub
-  SceLibRng_stub
+  SceLibKernel_stub 
   ${OPENSSL_LIBRARIES}
   z
   m
 )
 
-dolce_create_self("${SELF}"
+vita_create_self("${SELF}"
   "${ELF}"
 )
 
@@ -52,9 +56,9 @@ set(TITLE_NAME "CPython Simple Example")
 set(TITLE_ID "PYTH00001")
 set(TITLE_VER "01.00")
 
-dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
+vita_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
   VERSION "${TITLE_VER}"
-  FILE "$ENV{DOLCESDK}/arm-dolce-eabi/lib/python27.zip" lib/python27.zip
+  FILE "$ENV{VITASDK}/arm-vita-eabi/lib/python27.zip" lib/python27.zip
   FILE ytdl.py ytdl.py
 )

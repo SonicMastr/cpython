@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 
-#ifdef __VITA__
+#ifdef __vita__
 #ifdef  HAVE_PTHREAD_H /* XXX Need to check in configure.ac */
 #undef _POSIX_THREADS
 #endif
@@ -39,7 +39,7 @@
 
 #ifndef _POSIX_THREADS
 
-#ifdef __VITA__
+#ifdef __vita__
 #define VITA_THREADS
 #endif
 

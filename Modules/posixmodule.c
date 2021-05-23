@@ -140,7 +140,7 @@ corresponding Unix manual entries for more information on calls.");
 #if defined(PYOS_OS2) && defined(PYCC_GCC) || defined(__VMS)
 /* Everything needed is defined in PC/os2emx/pyconfig.h or vms/pyconfig.h */
 #else
-#if defined(__VITA__)
+#if defined(__vita__)
 #define HAVE_GETCWD     1
 #define HAVE_OPENDIR    1
 #undef HAVE_FSYNC
@@ -169,7 +169,7 @@ corresponding Unix manual entries for more information on calls.");
 #define HAVE_SYSTEM     1
 #define HAVE_WAIT       1
 #define HAVE_TTYNAME    1
-#endif /* __VITA__ */
+#endif /* __vita__ */
 #endif  /* PYOS_OS2 && PYCC_GCC && __VMS */
 #endif  /* _MSC_VER */
 #endif  /* __BORLANDC__ */
@@ -2716,7 +2716,7 @@ posix_mkdir(PyObject *self, PyObject *args)
     Py_BEGIN_ALLOW_THREADS
 #if ( defined(__WATCOMC__) || defined(PYCC_VACPP) ) && !defined(__QNX__)
     res = mkdir(path);
-#elif defined(__VITA__)
+#elif defined(__vita__)
     res = sceIoMkdir(path, mode);
 #else
     res = mkdir(path, mode);
@@ -2827,7 +2827,7 @@ posix_rmdir(PyObject *self, PyObject *args)
 {
 #ifdef MS_WINDOWS
     return win32_1str(args, "rmdir", "s:rmdir", RemoveDirectoryA, "U:rmdir", RemoveDirectoryW);
-#elif defined (__VITA__)
+#elif defined (__vita__)
     char *path1 = NULL;
     int res;
     if (!PyArg_ParseTuple(args, "et:rmdir",
@@ -9512,7 +9512,7 @@ all_ins(PyObject *d)
 #define INITFUNC initos2
 #define MODNAME "os2"
 
-#elif defined(__VITA__)
+#elif defined(__vita__)
 #define INITFUNC initvita
 #define MODNAME "vita"
 

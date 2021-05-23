@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <Python.h>
-#include <psp2/net.h>
+#include <psp2/net/net.h>
 #include <sys/socket.h>
 #include <psp2/sysmodule.h>
-#include <psp2/libnetctl.h>
+#include <psp2/net/netctl.h>
 
 int _newlib_heap_size_user = 192 * 1024 * 1024;
 

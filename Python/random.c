@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #if defined(HAVE_SYS_RANDOM_H) && (defined(HAVE_GETRANDOM) || defined(HAVE_GETENTROPY))
 #include <sys/random.h>
-#elif defined(__VITA__)
+#elif defined(__vita__)
 #include <psp2/kernel/rng.h> 
 #endif
 #endif
@@ -354,7 +354,7 @@ _PyOS_URandom(void *buffer, Py_ssize_t size)
 #else
 # ifdef __VMS
     return vms_urandom((unsigned char *)buffer, size, 1);
-# elif defined(__VITA__)
+# elif defined(__vita__)
     return sceKernelGetRandomNumber(buffer, size);
 # else
     return dev_urandom_python((char*)buffer, size);

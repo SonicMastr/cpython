@@ -81,10 +81,10 @@ struct gni_sockinet {
 #define ENI_FAMILY      5
 #define ENI_SALEN       6
 
-#ifdef __VITA__
+#ifdef __vita__
 #include <sys/socket.h>
 #include <netdb.h>
-#include <psp2/net.h>
+#include <psp2/net/net.h>
 #define SCE_ERRNO_MASK 0xFF
 
 struct hostent *gethostbyaddr(const void *__addr, socklen_t __len, int __type) {
@@ -123,7 +123,7 @@ struct hostent *gethostbyaddr(const void *__addr, socklen_t __len, int __type) {
 
 	return &ent;
 }
-#endif /* __VITA__ */
+#endif /* __vita__ */
 
 /* forward declaration to make gcc happy */
 int getnameinfo Py_PROTO((const struct sockaddr *, size_t, char *, size_t,
@@ -185,14 +185,14 @@ getnameinfo(sa, salen, host, hostlen, serv, servlen, flags)
             return ENI_MEMORY;
         strcpy(serv, numserv);
     } else {
-#ifndef __VITA__
+#ifndef __vita__
         sp = getservbyport(port, (flags & NI_DGRAM) ? "udp" : "tcp");
         if (sp) {
             if (strlen(sp->s_name) > servlen)
                 return ENI_MEMORY;
             strcpy(serv, sp->s_name);
         } else
-#endif /* __VITA__ */
+#endif /* __vita__ */
             return ENI_NOSERVNAME;
     }
 

@@ -689,7 +689,7 @@ Windows: When executing Python scripts on the command line using file type
 Vita: Configure with
 
     "$CPYTHON_SRC_DIR/configure"                                                    \
-        --build="$BUILD" --host=arm-dolce-eabi --prefix="$DOLCESDK/arm-dolce-eabi"  \
+        --build="$BUILD" --host=arm-vita-eabi --prefix="$VITASDK/arm-vita-eabi"  \
         --disable-shared --without-threads --disable-ipv6 --without-signal-module   \
         CONFIG_SITE="$CPYTHON_SRC_DIR/config.site"                                  \
         CFLAGS="-Wl,-q,-z,nocopyreloc"                                              \

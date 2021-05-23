@@ -23,10 +23,10 @@ extern "C" {
 #endif
 #endif
 
-#ifdef __VITA__
-#include <psp2/kernel/iofilemgr.h>
+#ifdef __vita__
+#include <psp2/io/fcntl.h>
 #define SEP '/'
-#define MAXPATHLEN SCE_IO_MAX_PATH_LENGTH
+#define MAXPATHLEN 512
 #define DELIM ';'
 #endif
 

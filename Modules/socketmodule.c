@@ -3294,9 +3294,9 @@ socket_gethostname(PyObject *self, PyObject *unused)
 {
     char buf[1024];
     int res;
-#ifdef __VITA__
+#ifdef __vita__
     return PyString_FromString("Vita");
-#endif /* __VITA__ */
+#endif /* __vita__ */
     Py_BEGIN_ALLOW_THREADS
     res = gethostname(buf, (int) sizeof buf - 1);
     Py_END_ALLOW_THREADS
@@ -3347,7 +3347,7 @@ gethost_common(struct hostent *h, struct sockaddr *addr, int alen, int af)
 
     if (h == NULL) {
         /* Let's get real error message to return */
-#if !defined(RISCOS) && !defined(__VITA__)
+#if !defined(RISCOS) && !defined(__vita__)
         set_herror(h_errno);
 #else
         PyErr_SetString(socket_error, "host not found");
@@ -3553,10 +3553,10 @@ socket_gethostbyaddr(PyObject *self, PyObject *args)
     char *ip_num;
     struct hostent *h;
     PyObject *ret;
-#ifdef __VITA__
+#ifdef __vita__
     PyErr_SetString(socket_error, "Not Supported");
     return NULL;
-#endif /* __VITA__ */
+#endif /* __vita__ */
 #ifdef HAVE_GETHOSTBYNAME_R
     struct hostent hp_allocated;
 #ifdef HAVE_GETHOSTBYNAME_R_3_ARG
@@ -3676,10 +3676,10 @@ socket_getservbyport(PyObject *self, PyObject *args)
     int port;
     const char *proto=NULL;
     struct servent *sp;
-#ifdef __VITA__
+#ifdef __vita__
     PyErr_SetString(socket_error, "Not Supported");
     return NULL;
-#endif /* __VITA__ */
+#endif /* __vita__ */
     if (!PyArg_ParseTuple(args, "i|s:getservbyport", &port, &proto))
         return NULL;
     if (port < 0 || port > 0xffff) {
@@ -3715,7 +3715,7 @@ socket_getprotobyname(PyObject *self, PyObject *args)
 {
     const char *name;
     struct protoent *sp;
-#if defined(__BEOS__) || defined(__VITA__)
+#if defined(__BEOS__) || defined(__vita__)
 /* Not available in BeOS yet. - [cjh] */
     PyErr_SetString(socket_error, "getprotobyname not supported");
     return NULL;

@@ -48,7 +48,7 @@ getcwd(char *buf, int size)
 
 #else /* !HAVE_GETWD */
 
-#ifdef __VITA__
+#ifdef __vita__
 
 #include <string.h>
 
@@ -71,7 +71,7 @@ getcwd(char *buf, int size)
     return buf;
 }
 
-#else /* __VITA__ */
+#else /* __vita__ */
 
 /* Version for really old UNIX systems -- use pipe from pwd */
 
@@ -104,5 +104,5 @@ getcwd(char *buf, int size)
     return buf;
 }
 
-#endif /* __VITA__ */
+#endif /* __vita__ */
 #endif /* !HAVE_GETWD */

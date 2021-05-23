@@ -340,7 +340,7 @@ then
 	*-*-cygwin*)
 		ac_sys_system=Cygwin
 		;;
-	arm-dolce-eabi)
+	arm-vita-eabi)
 		ac_sys_system=Vita
 		;;
 	*)
@@ -389,7 +389,7 @@ if test "$cross_compiling" = yes; then
 	*-*-cygwin*)
 		_host_cpu=
 		;;
-	arm-dolce-eabi)
+	arm-vita-eabi)
 		_host_cpu=arm
 		;;
 	*)
