@@ -45,7 +45,7 @@ target_link_libraries("${ELF}"
   m
 )
 
-vita_create_self("${SELF}"
+vita_create_self(eboot.bin
   "${ELF}"
 )
 
@@ -56,7 +56,7 @@ set(TITLE_NAME "CPython Simple Example")
 set(TITLE_ID "PYTH00001")
 set(TITLE_VER "01.00")
 
-vita_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
+vita_create_vpk("${VPK}" "${TITLE_ID}" eboot.bin
   NAME "${TITLE_NAME}"
   VERSION "${TITLE_VER}"
   FILE "$ENV{VITASDK}/arm-vita-eabi/lib/python27.zip" lib/python27.zip
