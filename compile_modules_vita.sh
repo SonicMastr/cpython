@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 echo -e "\033[1;32mCompiling Python Modules\033[0m"
 if [ -z "$1" ]
     then
