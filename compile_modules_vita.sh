@@ -4,8 +4,9 @@ if [ -z "$1" ]
     then
         export PREFIX=$VITASDK/arm-vita-eabi
     else
-        export PREFIX=$1
+        export PREFIX=$1/$VITASDK/arm-vita-eabi
 fi
+
 export PYTHON_BUILD=python27-vita-build
 mkdir -p $PYTHON_BUILD
 # Clean the Python Installation for a Smaller Lib file

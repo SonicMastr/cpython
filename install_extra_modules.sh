@@ -4,7 +4,7 @@ if [ -z "$1" ]
     then
         export PREFIX=$VITASDK/arm-vita-eabi
     else
-        export PREFIX=$1
+        export PREFIX=$1/$VITASDK/arm-vita-eabi
 fi
 
 export INSTALLDIR=$PREFIX/lib/python2.7
