@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 
 	PySys_SetPath("app0:lib/python27.zip;app0:lib/python2.7;ux0:/data/lib/python27.zip;ux0:/data/lib/python2.7"); // Set the Paths for our Modules
 
-	PyRun_SimpleString("import sys\n);
+	PyRun_SimpleString("import sys\n");
 	PyRun_SimpleString("import os\n");
 	PyRun_SimpleString("print os.name\n");
 	PyRun_SimpleString("print sys.platform\n");
