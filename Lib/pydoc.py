@@ -1585,10 +1585,10 @@ def writedoc(thing, forceload=0):
     try:
         object, name = resolve(thing, forceload)
         page = html.page(describe(object), html.document(object, name))
-        file = open(name + '.html', 'w')
+        file = open('ux0:data/docs/' + name + '.html', 'w')
         file.write(page)
         file.close()
-        print 'wrote', name + '.html'
+        print 'wrote', 'ux0:data/docs/' + name + '.html'
     except (ImportError, ErrorDuringImport), value:
         print value
 
